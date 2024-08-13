@@ -1,8 +1,9 @@
+from typing import List
 
-
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
+from pydantic import BaseModel
 from sqlalchemy import create_engine, Column, String, Integer
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.orm import sessionmaker, declarative_base, Session
 
 # sqlalchemy
 # 파이썬용 ORM 라이브러리
@@ -28,12 +29,50 @@ class Sungjuk(Base):
 # 데이터베이스 테이블 생성
 Base.metadata.create_all(bind=engine)
 
+# 데이터베이스 세션을 의존성으로 주입하기 위한 함수
+def get_db():
+    db = SessionLocal() # 콘솔만들고 연결 같은 느낌
+    try:
+        yield db # yield :  파이썬 제너레이터 객체
+                 # 함수가 호출될 때 비로소 객체를 반환
+    finally:
+        db.close() # 데이터베이스 세션 닫음 (디비연결해제, 리소스 반환)
+        
+# pydantic 모델
+class SungjukModel(BaseModel):
+    sjno: int
+    name: str
+    kor: int
+    eng: int
+    mat: int
+
 app = FastAPI()
+
 
 @app.get("/")
 def index():
     return "Hello sqlalchemy, again!!"
 
+# 성적조회
+# Depends : 의존성 주입 - 디비 세션 제공
+# => 코드 재사요요ㅓㅇ 향향
+@app.get("/sj", response_model=List[SungjukModel])
+def read_sj(db: Session = Depends(get_db)):
+    sungjuks = db.query(Sungjuk).all()
+    return sungjuks
+
+@app.post('/sj', response_model=SungjukModel)
+def sjadd(sj: SungjukModel, db: Session = Depends(get_db)):
+    sj = Sungjuk(**dict(sj)) # 클라이언트가 전송한 성적 데이터가
+                            # pydanmic으로 유효성 검사후
+                            # 데이터베이스에 저장할수 있도록
+                            # sqlalchemy 객체로 변함
+    # py : Sungjuk(name=?, kor=?, eng=?, mat=?)
+    # sa : Sungjuk(sj['name'], sj['kor'], sj['eng'], sj['mat'])
+    db.add(sj)
+    db.commit()
+    db.refresh(sj)
+    return sj
 
 if __name__ == "__main__":
     import uvicorn
