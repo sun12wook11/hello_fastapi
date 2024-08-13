@@ -31,7 +31,49 @@ def index():
 def sj_readall():
     return sungjuk_db
 
+@app.post("/sjadd", response_model=Sungjuk)
+def sj_create(sj: Sungjuk):
+    sj = Sungjuk()
+    sungjuk_db.append(sj)
+    return sj
+
+# 성적데이터상세조회 이름으로 조회
+@app.get('/sjone/{name}', response_model=Sungjuk)
+def sjone(name: str):
+    findone = None
+    for sj in sungjuk_db:
+      if sj.name == name:
+            findone = sj
+    return findone
+
+#샘플 성적 데이터 추가 :
+@app.get('/sjadd', response_model=Sungjuk)
+def sj_create():00.
+    sj = Sungjuk(name='혜교',kor=99, eng=98, mat=99)
+    sungjuk_db.append(sj)
+
+    sj = Sungjuk(name='지현',kor=44, eng=55, mat=66)
+    sungjuk_db.append(sj)
+
+    sj = Sungjuk(name='수지',kor=77, eng=88, mat=91)
+    sungjuk_db.append(sj)
+    return sj
 
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run('pydantic01:app', reload=True)
+
+@app.post("/sjadd", response_model=Sungjuk)
+def sj_create(sj: Sungjuk):
+    sj = Sungjuk()
+    sungjuk_db.append(sj)
+    return sj
+
+@app.delete('/sj/', resource_model=Sungjuk)
+def sjrmv(name: str):
+    rmvone = Sungjuk(name='none',kor=00,eng=00,mat=00)
+    for idx, sj in enumerate(sungjuk_db):
+        if sj.name == name:
+            rmvone = sungjuk_db.pop(idx)
+    return rmvone
+
