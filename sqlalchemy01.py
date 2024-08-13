@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from fastapi import FastAPI, Depends
 from pydantic import BaseModel
@@ -73,6 +73,12 @@ def sjadd(sj: SungjukModel, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(sj)
     return sj
+
+@app.get("/sj/{sjno}", response_model=Optional[SungjukModel])
+def readone_sj(sjno: int, db: Session = Depends(get_db)):
+    sungjuk = db.query(Sungjuk).filter(Sungjuk.sjno == sjno).first()
+    return sungjuk
+
 
 if __name__ == "__main__":
     import uvicorn
