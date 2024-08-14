@@ -37,14 +37,20 @@ def get_db():
     finally:
         db.close()
 
-# Pydantic 모델 정의
-class MemberModel(BaseModel):
-    mno: Optional[int] = None
+    # Pydantic 모델 정의 부모
+class NewMemberModel(BaseModel):
     userid: str
     passwd: str
     name: str
     email: EmailStr
+
+# Pydantic 모델 정의 상속
+class MemberModel(NewMemberModel):
+    mno: Optional[int] = None
     regdate: Optional[datetime] = None
+
+
+
 
     class Config:
         from_attributes = True
@@ -56,13 +62,15 @@ def index():
     return "Member management with SQLAlchemy and FastAPI!"
 
 # 회원 등록
-@app.post("/members/", response_model=MemberModel)
-def create_member(member: MemberModel, db: Session = Depends(get_db)):
+# @app.post("/members/", response_model=NewMemberModel)
+@app.post("/members/", response_model=str)
+def create_member(member: NewMemberModel, db: Session = Depends(get_db)):
     db_member = Member(**member.dict())
     db.add(db_member)
     db.commit()
     db.refresh(db_member)
-    return db_member
+    # return db_member
+    return '데이터 입력 성공!!'
 
 # 전체 회원 조회
 @app.get("/members/", response_model=List[MemberModel])
@@ -98,7 +106,6 @@ def delete_member(mno: int, db: Session = Depends(get_db)):
     db_member = db.query(Member).filter(Member.mno == mno).first()
     if db_member is None:
         raise HTTPException(status_code=404, detail="Member not found")
-
     db.delete(db_member)
     db.commit()
     return db_member
