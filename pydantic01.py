@@ -2,6 +2,9 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from typing_extensions import List
 
+from app.routes.member_router import member_router
+from app.routes.sungjuk_router import sungjuk_router
+
 
 # pydantic
 # 데이터 유효성 검사 및 직렬화/역직렬화 지원 도구
@@ -47,21 +50,17 @@ def sjone(name: str):
     return findone
 
 #샘플 성적 데이터 추가 :
-@app.get('/sjadd', response_model=Sungjuk)
-def sj_create():00.
-    sj = Sungjuk(name='혜교',kor=99, eng=98, mat=99)
-    sungjuk_db.append(sj)
+@app.post('/sjadd/samples', response_model=List[Sungjuk])
+def sj_create_samples():
+    samples = [
+        Sungjuk(name='혜교', kor=99, eng=98, mat=99),
+        Sungjuk(name='지현', kor=44, eng=55, mat=66),
+        Sungjuk(name='수지', kor=77, eng=88, mat=91),
+    ]
+    sungjuk_db.extend(samples)
+    return samples
 
-    sj = Sungjuk(name='지현',kor=44, eng=55, mat=66)
-    sungjuk_db.append(sj)
 
-    sj = Sungjuk(name='수지',kor=77, eng=88, mat=91)
-    sungjuk_db.append(sj)
-    return sj
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run('pydantic01:app', reload=True)
 
 @app.post("/sjadd", response_model=Sungjuk)
 def sj_create(sj: Sungjuk):
@@ -86,3 +85,11 @@ def sjput(one: Sungjuk):
             sungjuk_db[idx] = one
             putone = one
     return putone
+
+# 외부 라우트 파일 불러오기
+app.include_router(member_router, prefix='/member')
+app.include_router(sungjuk_router, prefix='/sungjuk')
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run('pydantic01:app', reload=True)

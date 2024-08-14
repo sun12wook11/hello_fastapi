@@ -25,6 +25,14 @@ class Member(Base):
     email = Column(String, unique=True, index=True)
     regdate = Column(DateTime(timezone=True), default=datetime.utcnow)
 
+# 데이터베이스 세션을 의존성으로 주입하기 위한 함수
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
 async def db_startup():
     sungjuk.Base.metadata.create_all(engine)
 

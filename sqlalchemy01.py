@@ -95,10 +95,10 @@ def delete_sj(sjno: int, db: Session = Depends(get_db)):
 def update_sj(sj:SungjukModel, db: Session = Depends(get_db)):
     sungjuk = db.query(Sungjuk).filter(Sungjuk.sjno == sj.sjno).first()
     if sungjuk:
-        for key, value in dict(sj).items():
-            setattr(sungjuk, key, value)
-            db.commit()
-            db.refresh(sj)
+        for key, val in sj.dict().items():
+            setattr(sungjuk, key, val)
+        db.commit()
+        db.refresh(sungjuk)
     return sungjuk
 
 

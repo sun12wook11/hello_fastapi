@@ -24,6 +24,7 @@ app = FastAPI(lifespan=lifespan)
 def index():
     return "Hello APIrouter!!"
 
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run('apirouter01:app', reload=True)
